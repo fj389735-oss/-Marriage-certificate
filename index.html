@@ -125,24 +125,91 @@
         lucide.createIcons();
         let signaturePad;
         
-        window.addEventListener('DOMContentLoaded', () => 
-          {const canvas = document.getElementById('signature-pad');
-           signaturePad = new SignaturePad(canvas, { penColor: '#1c1917' });
-           signaturePad.addEventListener("endStroke", () => {
-             document.getElementById('signedBadge').classList.remove('hidden');
-                                                             validateForm();
-           });
-           // Forzar tamaño de dibujo correcto
-           const ratio = Math.max(window.devicePixelRatio || 1, 1);
-           canvas.width = canvas.offsetWidth * ratio;
-           canvas.height = canvas.offsetHeight * ratio;
-           canvas.getContext("2d").scale(ratio, ratio);
-           // Edad novio
-           document.getElementById('groomAge').innerText = calculateAge('2003-12-17');
-          });
+        window.addEventListener('DOMContentLoaded', () => {
+                const canvas = document.getElementById('signature-pad');
+                signaturePad = new SignaturePad(canvas, { penColor: '#1c1917' });
+                signaturePad.addEventListener("endStroke", () => {
+                document.getElementById('signedBadge').classList.remove('hidden');
+                validateForm();
+            });
+            // Forzar tamaño de dibujo correcto
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            // Edad novio
+            document.getElementById('groomAge').innerText = calculateAge('2003-12-17');
+        });
+        
         function calculateAge(dateString) {
-          const today = new Date();const birthDate = new Date(dateString);let age = today.getFullYear() - birthDate.getFullYear();const m = today.getMonth() - birthDate.getMonth();if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;return age;}function clearSignature() {signaturePad.clear();document.getElementById('signedBadge').classList.add('hidden');validateForm();}function validateForm() {const name = document.getElementById('fullName').value;const dpi = document.getElementById('dpi').value;const date = document.getElementById('birthDate').value;const signed = !signaturePad.isEmpty();const btn = document.getElementById('submitBtn');if (name && dpi && date && signed) {btn.removeAttribute('disabled');btn.className = "w-full py-4 rounded-xl font-semibold transition-all bg-[#991b1b] text-white hover:bg-red-700 cursor-pointer";} else {btn.setAttribute('disabled', 'true');btn.className = "w-full py-4 rounded-xl font-semibold transition-all bg-stone-200 text-stone-400 cursor-not-allowed";}}function goToStep(stepNum) {document.getElementById('step1').style.display = stepNum === 1 ? 'block' : 'none';document.getElementById('step2').style.display = stepNum === 2 ? 'block' : 'none';document.getElementById('step3').style.display = stepNum === 3 ? 'block' : 'none';document.getElementById('step4').style.display = stepNum === 4 ? 'block' : 'none';}function handleSubmit(e) {e.preventDefault();goToStep(3);const texts = ['Consultando al registro civil del amor...','Firmando actas con tinta indeleble...','Preparando tu sorpresa eterna...'];let idx = 0;const interval = setInterval(() => {idx++;if (idx < texts.length) document.getElementById('loadingText').innerText = texts[idx];}, 1200);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-          // Inyectar datos al certificado
-          const name = document.getElementById('fullName').value;const dateParts = document.getElementById('birthDate').value.split('-');document.getElementById('certName').innerText = name;document.getElementById('certDpi').innerText = "DPI No. " + document.getElementById('dpi').value;document.getElementById('certBirth').innerText = Nacida el ${dateParts[2]}/${dateParts[1]}/${dateParts[0]} (${calculateAge(document.getElementById('birthDate').value)} años);document.getElementById('certSignName').innerText = (${name});const img = document.getElementById('certSignature');img.src = signaturePad.toDataURL();img.classList.remove('hidden');setTimeout(() => {clearInterval(interval);goToStep(4);}, 4000);}async function downloadPDF() {const { jsPDF } = window.jspdf;const element = document.getElementById('certificate');const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#fdfbf7' });const imgData = canvas.toDataURL('image/png');const pdf = new jsPDF({ orientation: 'portrait', unit: 'in', format: 'letter' });pdf.addImage(imgData, 'PNG', 0, 0, 8.5, 11);pdf.save('certificado-matrimonio.pdf');}
+            const today = new Date();
+            const birthDate = new Date(dateString);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            return age;
+        }
+        
+        function clearSignature() {
+            signaturePad.clear();
+            document.getElementById('signedBadge').classList.add('hidden');
+            validateForm();
+        }
+        
+        function validateForm() {
+            const name = document.getElementById('fullName').value;
+            const dpi = document.getElementById('dpi').value;
+            const date = document.getElementById('birthDate').value;
+            const signed = !signaturePad.isEmpty();
+            const btn = document.getElementById('submitBtn');
+            
+            if (name && dpi && date && signed) {
+                btn.removeAttribute('disabled');
+                btn.className = "w-full py-4 rounded-xl font-semibold transition-all bg-[#991b1b] text-white hover:bg-red-700 cursor-pointer";
+            } else {
+                btn.setAttribute('disabled', 'true');
+                btn.className = "w-full py-4 rounded-xl font-semibold transition-all bg-stone-200 text-stone-400 cursor-not-allowed";
+            }
+        }
+        
+        function goToStep(stepNum) {
+            document.getElementById('step1').style.display = stepNum === 1 ? 'block' : 'none';
+            document.getElementById('step2').style.display = stepNum === 2 ? 'block' : 'none';
+            document.getElementById('step3').style.display = stepNum === 3 ? 'block' : 'none';
+            document.getElementById('step4').style.display = stepNum === 4 ? 'block' : 'none';
+        }
+        
+        function handleSubmit(e) {
+            e.preventDefault();
+            goToStep(3);
+            const texts = ['Consultando al registro civil del amor...','Firmando actas con tinta indeleble...','Preparando tu sorpresa eterna...'];
+            let idx = 0;
+            const interval = setInterval(() => {
+                idx++;
+                if (idx < texts.length) document.getElementById('loadingText').innerText = texts[idx];
+            }, 1200);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+            // Inyectar datos al certificado
+            const name = document.getElementById('fullName').value;
+            const dateParts = document.getElementById('birthDate').value.split('-');
+            document.getElementById('certName').innerText = name;
+            document.getElementById('certDpi').innerText = "DPI No. " + document.getElementById('dpi').value;
+            document.getElementById('certBirth').innerText = Nacida el ${dateParts[2]}/${dateParts[1]}/${dateParts[0]} (${calculateAge(document.getElementById('birthDate').value)} años);
+            document.getElementById('certSignName').innerText = (${name});
+            const img = document.getElementById('certSignature');
+            img.src = signaturePad.toDataURL();
+            img.classList.remove('hidden');
+            setTimeout(() => {
+                clearInterval(interval);goToStep(4);
+            }, 4000);
+        }
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const element = document.getElementById('certificate');
+            const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#fdfbf7' });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'in', format: 'letter' });
+            pdf.addImage(imgData, 'PNG', 0, 0, 8.5, 11);
+            pdf.save('certificado-matrimonio.pdf');
+        }
         
