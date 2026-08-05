@@ -386,15 +386,12 @@
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
                 
                 if (isMobile) {
-                    // Convertir a Blob binario nativo seguro
+                    // Convertir a Blob binario nativo seguro para saltar bloqueos de descarga en celulares
                     const pdfBlob = pdf.output('blob');
                     const blobURL = URL.createObjectURL(pdfBlob);
-                    
-                    // AVISO SENIOR: Guiar al usuario de iPhone/Android antes de redirigir
-                    alert("¡Certificado generado con éxito! En tu teléfono se abrirá en pantalla completa. Presiona el botón de 'Compartir' de tu navegador para guardarlo o enviarlo.");
-                    
                     window.location.href = blobURL;
                 } else {
+                    // Descarga directa tradicional en computadoras
                     pdf.save('certificado-matrimonio.pdf');
                 }
                 
