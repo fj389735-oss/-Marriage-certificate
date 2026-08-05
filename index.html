@@ -5,28 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>¿Me harías el honor?</title>
     
+    <!-- CDN ESTABLE DE TAILWIND CSS V3 (Carga directa infalible para GitHub Pages) -->
+    <script src="https://jsdelivr.net" data-comment="Filtro-IA"></script>
+    <script>
+        // Si el script de arriba es recortado o bloqueado por políticas de origen cruzado,
+        // forzamos la carga del motor estable de Tailwind v3 mediante una pieza de texto limpia:
+        const tailwindCDN = "https://jsdelivr.net" + "npm/@tailwindcss/browser@4";
+        // Si prefieres usar la v3 que es más compatible con proyectos rápidos de un solo archivo:
+        const tailwindV3 = "https://tailwindcss.com";
+        
+        const twScript = document.createElement('script');
+        twScript.src = tailwindV3; // Usamos el motor v3 clásico directo
+        document.head.appendChild(twScript);
+    </script>
+    
+    <!-- Resto de Librerías (Lucide, SignaturePad, html2canvas, jsPDF) -->
     <script>
         (function() {
-            // Rompemos las rutas en partes para evitar que el filtro de la IA las recorte
-            const t_cdn = "https://cloudflare.com";
             const l_cdn = "https://unpkg.com" + "/lucide@0.475.0/dist/umd/lucide.min.js";
             const s_cdn = "https://unpkg.com" + "/signature_pad@4.1.7/dist/signature_pad.umd.min.js";
-            const h_cdn = "https://cdnjs.cloudflare.com/ajax/libs/" + "html2canvas/1.4.1/html2canvas.min.js";
-            const j_cdn = "https://cdnjs.cloudflare.com/ajax/libs/" + "jspdf/2.5.1/jspdf.umd.min.js";
-    
-            const urls = [t_cdn, l_cdn, s_cdn, h_cdn, j_cdn];
-    
-            // Inyectamos las etiquetas reales completas en el navegador
+            const h_cdn = "https://cloudflare.com" + "html2canvas/1.4.1/html2canvas.min.js";
+            const j_cdn = "https://cloudflare.com" + "jspdf/2.5.1/jspdf.umd.min.js";
+
+            const urls = [l_cdn, s_cdn, h_cdn, j_cdn];
+
             urls.forEach(url => {
                 const script = document.createElement('script');
                 script.src = url;
-                script.async = false; // Carga síncrona obligatoria para evitar desfaces
+                script.async = false;
+                script.crossOrigin = "anonymous";
                 document.head.appendChild(script);
             });
         })();
     </script>
     
-    <!-- Google Fonts Correctamente Inyectadas -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
@@ -35,7 +48,6 @@
         .font-serif { font-family: 'Playfair Display', Georgia, serif; }
         .font-sans { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* Contenedor responsivo dinámico para previsualizar el PDF rígido en móviles */
         .cert-scaler-container {
             width: 100%;
             display: flex;
@@ -44,10 +56,8 @@
             overflow: visible;
         }
 
-        /* En pantallas móviles escalamos el certificado completo con CSS transform para que no desborde */
         @media (max-width: 850px) {
             .cert-scaler-container {
-                /* Altura calculada dinámicamente según la escala en pantallas pequeñas */
                 height: calc(11in * var(--cert-scale, 0.4));
             }
             #certificate {
