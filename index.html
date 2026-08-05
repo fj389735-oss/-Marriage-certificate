@@ -346,13 +346,14 @@
         async function downloadPDF() {
             let InstancePDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
             if (!InstancePDF) {
-                alert("Las dependencias se están sincronizando. Espera 2 segundos.");
+                alert("Las dependencias de PDF se están sincronizando. Espera 2 segundos.");
                 return;
             }
 
-            const renderEngine = window.html2canvasPro;
+            // REPARACIÓN MAESTRA: html2canvas-pro usa el objeto global clásico 'html2canvas'
+            const renderEngine = window.html2canvas;
             if (!renderEngine) {
-                alert("El motor gráfico se está inicializando. Intenta de nuevo.");
+                alert("El motor gráfico se está inicializando en tu dispositivo. Intenta de nuevo.");
                 return;
             }
 
@@ -368,6 +369,7 @@
             element.style.transform = 'none';
             
             try {
+                // Ejecutar la captura con el motor PRO corregido
                 const canvasPDF = await renderEngine(element, {
                     scale: 2, 
                     backgroundColor: '#fdfbf7',
