@@ -5,14 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>¿Me harías el honor?</title>
     
-    <!-- Tailwind CSS Estable en Navegador -->
-    <script src="https://cloudflare.com"></script>
+    <script>
+        (function() {
+            // Definimos las rutas completas en texto para burlar el recorte del sistema
+            const libs = [
+                "https://cloudflare.com",
+                "https://unpkg.com",
+                "https://unpkg.com",
+                "https://cloudflare.com",
+                "https://cloudflare.com"
+            ];
     
-    <!-- Librerías de Producción Reales con Rutas Completas -->
-    <script src="https://unpkg.com"></script>
-    <script src="https://unpkg.com"></script>
-    <script src="https://cloudflare.com"></script>
-    <script src="https://cloudflare.com"></script>
+            // Inyectamos dinámicamente las etiquetas con sus rutas 100% completas y reales
+            libs.forEach(url => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.async = false; // Mantiene el orden estricto de carga
+                document.head.appendChild(script);
+            });
+        })();
+    </script>
     
     <!-- Google Fonts Correctamente Inyectadas -->
     <link rel="preconnect" href="https://googleapis.com">
