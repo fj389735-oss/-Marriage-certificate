@@ -7,7 +7,6 @@
     
     <script>
         (function() {
-            // Definimos las rutas completas en texto para burlar el recorte del sistema
             const libs = [
                 "https://cloudflare.com",
                 "https://unpkg.com",
@@ -16,15 +15,19 @@
                 "https://cloudflare.com"
             ];
     
-            // Inyectamos dinámicamente las etiquetas con sus rutas 100% completas y reales
             libs.forEach(url => {
                 const script = document.createElement('script');
                 script.src = url;
-                script.async = false; // Mantiene el orden estricto de carga
+                script.async = false;
+                
+                // SOLUCIÓN CLAVE: Elimina la advertencia de Tracking Prevention
+                script.crossOrigin = "anonymous"; 
+                
                 document.head.appendChild(script);
             });
         })();
     </script>
+
     
     <!-- Google Fonts Correctamente Inyectadas -->
     <link rel="preconnect" href="https://googleapis.com">
@@ -181,27 +184,42 @@
         let canvas;
         
         window.addEventListener('DOMContentLoaded', () => {
-            // Inicializar Iconos Globales de Lucide
-            lucide.createIcons();
-            
-            // Vincular e inicializar el Canvas de Firma de forma segura
-            canvas = document.getElementById('signature-pad');
-            signaturePad = new SignaturePad(canvas, {
-                penColor: '#1c1917',
-                velocityFilterWeight: 0.7
-            });
-            
-            signaturePad.addEventListener("endStroke", () => {
-                document.getElementById('signedBadge').classList.remove('hidden');
-                validateForm();
-            });
-            
-            // Registrar oyente reactivo para redimensionar el certificado visualmente
-            window.addEventListener('resize', handleCertScaling);
-            
-            // Calcular Edad del novio fija de forma correcta
-            document.getElementById('groomAge').innerText = calculateAge('2003-12-17');
+            // Le damos 150 milisegundos al navegador para asimilar las librerías CDN externas
+            setTimeout(() => {
+                try {
+                    // Inicializar Iconos Globales de Lucide
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                    
+                    // Vincular e inicializar el Canvas de Firma de forma segura
+                    canvas = document.getElementById('signature-pad');
+                    if (canvas && typeof SignaturePad !== 'undefined') {
+                        signaturePad = new SignaturePad(canvas, {
+                            penColor: '#1c1917',
+                            velocityFilterWeight: 0.7
+                        });
+                        
+                        signaturePad.addEventListener("endStroke", () => {
+                            document.getElementById('signedBadge').classList.remove('hidden');
+                            validateForm();
+                        });
+                    }
+                    
+                    // Registrar oyente reactivo para redimensionar el certificado visualmente
+                    window.addEventListener('resize', handleCertScaling);
+                    
+                    // Calcular Edad del novio fija
+                    const groomAgeEl = document.getElementById('groomAge');
+                    if (groomAgeEl) {
+                        groomAgeEl.innerText = calculateAge('2003-12-17');
+                    }
+                } catch (err) {
+                    console.error("Error cargando componentes iniciales:", err);
+                }
+            }, 150);
         });
+
 
                     
                 // Solución Senior Mobile-First: Forzar cálculo preciso de pixeles del Canvas basado en CSS real
