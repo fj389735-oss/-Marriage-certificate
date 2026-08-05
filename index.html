@@ -5,29 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>¿Me harías el honor?</title>
     
-    <script>
-        (function() {
-            const libs = [
-                "https://cloudflare.com",
-                "https://unpkg.com",
-                "https://unpkg.com",
-                "https://cloudflare.com",
-                "https://cloudflare.com"
-            ];
-    
-            libs.forEach(url => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.async = false;
-                
-                // SOLUCIÓN CLAVE: Elimina la advertencia de Tracking Prevention
-                script.crossOrigin = "anonymous"; 
-                
-                document.head.appendChild(script);
-            });
-        })();
-    </script>
-
+    <!-- CDNs Oficiales y Estables de Producción -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://unpkg.com"></script>
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://cloudflare.com"></script>
+    <script src="https://cloudflare.com"></script>
     
     <!-- Google Fonts Correctamente Inyectadas -->
     <link rel="preconnect" href="https://googleapis.com">
