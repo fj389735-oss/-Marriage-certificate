@@ -346,28 +346,25 @@
         async function downloadPDF() {
             let InstancePDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
             if (!InstancePDF) {
-                alert("Las dependencias se están sincronizando. Espera 2 segundos.");
+                alert("Las dependencias se están sincronizando. Espera 2 segundos y presiona de nuevo.");
                 return;
             }
 
+            // Usamos el nuevo motor PRO que sí entiende los colores oklab y oklch de Tailwind v4
             const renderEngine = window.html2canvasPro;
             if (!renderEngine) {
-                alert("El motor gráfico se está inicializando. Intenta de nuevo.");
+                alert("El motor gráfico Pro se está inicializando. Intenta de nuevo.");
                 return;
             }
 
             const element = document.getElementById('certificate');
             const originalTransform = element.style.transform;
             
-            // Guardar el título original de la página para restaurarlo después
-            const originalTitle = document.title;
-            
-            // SOLUCIÓN IPHONE 1: Forzar el nombre que WhatsApp e iOS usarán como nombre de archivo
-            document.title = "Certificado de Matrimonio";
-            
+            // Forzar reseteo temporal de escala para que la captura sea a tamaño Carta nativo (8.5x11in)
             element.style.transform = 'none';
             
             try {
+                // Ejecutar la captura con el motor PRO compatible
                 const canvasPDF = await renderEngine(element, {
                     scale: 2, 
                     backgroundColor: '#fdfbf7',
@@ -379,51 +376,47 @@
                     }
                 });
                 
+                // Restaurar la vista adaptativa del celular de forma instantánea
                 element.style.transform = originalTransform;
                 
                 const imgData = canvasPDF.toDataURL('image/jpeg', 0.95);
                 const pdf = new InstancePDF({ orientation: 'portrait', unit: 'in', format: 'letter' });
-                
-                // SOLUCIÓN IPHONE 2: Incrustar metadatos duros dentro del archivo binario del PDF
-                pdf.setProperties({
-                    title: 'Certificado de Matrimonio.pdf',
-                    subject: 'Matrimonio Simbólico',
-                    author: 'Registro Civil del Amor'
-                });
-                
                 pdf.addImage(imgData, 'JPEG', 0, 0, 8.5, 11);
                 
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
                 
                 if (isMobile) {
-                    // SOLUCIÓN IPHONE 3: Forzar conversión a Base64 con nombre de descarga asignado
-                    const pdfBlob = pdf.output('blob');
-                    const reader = new FileReader();
-                    
-                    reader.onloadend = function() {
-                        let base64data = reader.result;
+                    try {
+                        // 1. Generamos el Blob nativo del PDF
+                        const pdfBlob = pdf.output('blob');
+                        const blobURL = URL.createObjectURL(pdfBlob);
                         
-                        // Modificamos el encabezado del String para inyectar el nombre del archivo nativo en iOS
-                        base64data = base64data.replace('data:application/pdf;', 'data:application/pdf;name=Certificado-de-Matrimonio.pdf;');
+                        // 2. Creamos un elemento de anclaje oculto en el DOM temporalmente
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = blobURL;
+                        downloadLink.download = 'certificado-matrimonio.pdf';
+                        downloadLink.target = '_blank'; // Previene congelamientos en iOS/Safari
                         
-                        // Redirigir de forma segura al visor nativo con el nombre incrustado
-                        window.location.href = base64data;
+                        // 3. Forzamos el click y lo destruimos para liberar memoria
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
                         
-                        // Restaurar el título original de la pestaña del navegador sutilmente en segundo plano
-                        setTimeout(() => { document.title = originalTitle; }, 1000);
-                    };
-                    
-                    reader.readAsDataURL(pdfBlob);
+                        setTimeout(() => {
+                            document.body.removeChild(downloadLink);
+                            URL.revokeObjectURL(blobURL); // Evita fugas de memoria en el celular
+                        }, 150);
+                
+                    } catch (error) {
+                        console.error("Fallo en descarga móvil, usando respaldo directo:", error);
+                        pdf.save('certificado-matrimonio.pdf');
+                    }
                 } else {
-                    // Computadoras de escritorio descargan directo con nombre limpio
-                    pdf.save('Certificado de Matrimonio.pdf');
-                    document.title = originalTitle;
-                }
+                    // Descarga directa tradicional en computadoras
+                    pdf.save('certificado-matrimonio.pdf');
                 
             } catch (error) {
                 console.error("Error crítico en renderizado de PDF:", error);
                 element.style.transform = originalTransform;
-                document.title = originalTitle;
                 alert("Ocurrió un inconveniente técnico al procesar el certificado. Inténtalo de nuevo.");
             }
         }
