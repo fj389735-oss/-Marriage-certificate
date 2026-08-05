@@ -2,22 +2,48 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>¿Me harías el honor?</title>
-    <!-- Tailwind CSS Oficial v4 -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Bibliotecas Externas Obligatorias -->
-    <script src="https://cloudflare.com"></script>
-    <script src="https://cloudflare.com"></script>
+    
+    <!-- CDNs Oficiales y Estables de Producción -->
     <script src="https://jsdelivr.net"></script>
     <script src="https://unpkg.com"></script>
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://cloudflare.com"></script>
+    <script src="https://cloudflare.com"></script>
+    
+    <!-- Google Fonts Correctamente Inyectadas -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+
     <style>
-        @import url('https://googleapis.com');
         .font-serif { font-family: 'Playfair Display', Georgia, serif; }
         .font-sans { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* Contenedor responsivo dinámico para previsualizar el PDF rígido en móviles */
+        .cert-scaler-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: visible;
+        }
+
+        /* En pantallas móviles escalamos el certificado completo con CSS transform para que no desborde */
+        @media (max-width: 850px) {
+            .cert-scaler-container {
+                /* Altura calculada dinámicamente según la escala en pantallas pequeñas */
+                height: calc(11in * var(--cert-scale, 0.4));
+            }
+            #certificate {
+                transform: scale(var(--cert-scale, 0.4));
+                transform-origin: top center;
+            }
+        }
     </style>
 </head>
-<body class="min-h-screen bg-[#fcf9f5] font-serif relative overflow-hidden flex items-center justify-center p-4 m-0 selection:bg-red-200 w-full">
+<body class="min-h-screen bg-[#fcf9f5] font-serif flex items-center justify-center p-4 m-0 selection:bg-red-200 w-full overflow-x-hidden">
 
     <!-- ESTADO 1: BIENVENIDA -->
     <div id="step1" class="z-10 text-center max-w-md p-8 block">
@@ -34,29 +60,32 @@
     <!-- ESTADO 2: FORMULARIO -->
     <div id="step2" class="z-10 w-full max-w-lg bg-white rounded-2xl shadow-xl border border-pink-100/60 p-6 md:p-8 hidden">
         <h2 class="text-2xl text-center text-stone-800 mb-2 font-semibold">Registro del Compromiso</h2>
-        <p class="text-center text-sm text-pink-700 font-sans tracking-wide uppercase mb-6 flex items-center justify-center gap-1"><i data-lucide="lock" style="width:14px;"></i> Llena el formulario para descubrir la sorpresa</p>
+        <p class="text-center text-sm text-pink-700 font-sans tracking-wide uppercase mb-6 flex items-center justify-center gap-1">
+            <i data-lucide="lock" style="width:14px;"></i> Llena el formulario para descubrir la sorpresa
+        </p>
         <form id="loveForm" onsubmit="handleSubmit(event)" class="space-y-5 font-sans">
             <div>
                 <label class="block text-xs font-semibold text-stone-600 uppercase mb-2">Nombre Completo</label>
-                <input type="text" id="fullName" required placeholder="Tu nombre completo" class="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50/50" oninput="validateForm()">
+                <input type="text" id="fullName" required placeholder="Tu nombre completo" class="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50/50 outline-none focus:border-red-400" oninput="validateForm()">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-stone-600 uppercase mb-2">DPI / Documento de Identidad</label>
-                <input type="number" id="dpi" required placeholder="Número de documento" class="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50/50" oninput="validateForm()">
+                <input type="number" id="dpi" required placeholder="Número de documento" class="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50/50 outline-none focus:border-red-400" oninput="validateForm()">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-stone-600 uppercase mb-2">Fecha de Nacimiento</label>
-                <input type="date" id="birthDate" required class="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50/50 text-stone-700" oninput="validateForm()">
+                <input type="date" id="birthDate" required class="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50/50 text-stone-700 outline-none focus:border-red-400" oninput="validateForm()">
             </div>
-                        <div>
+            <div>
                 <label class="block text-xs font-semibold text-stone-600 uppercase mb-2 flex justify-between items-center">
                     <span>Firma Digital Autógrafa</span>
                     <span id="signedBadge" class="text-emerald-600 font-medium hidden">✓ Capturada</span>
                 </label>
                 <div class="border border-stone-200 bg-stone-50 rounded-xl overflow-hidden relative">
-                    <!-- Forzamos el tamaño inicial aquí para que responda al clic -->
-                    <canvas id="signature-pad" width="450" height="150" class="w-full h-36 bg-stone-50" style="touch-action: none;"></canvas>
-                    <button type="button" onclick="clearSignature()" class="absolute bottom-2 right-2 p-1.5 bg-white text-stone-500 border border-stone-200 rounded-lg text-xs flex items-center gap-1 cursor-pointer"><i data-lucide="trash-2" style="width:13px;"></i> Limpiar</button>
+                    <canvas id="signature-pad" class="w-full h-36 bg-stone-50" style="touch-action: none;"></canvas>
+                    <button type="button" onclick="clearSignature()" class="absolute bottom-2 right-2 p-1.5 bg-white text-stone-500 border border-stone-200 rounded-lg text-xs flex items-center gap-1 cursor-pointer shadow-sm z-20">
+                        <i data-lucide="trash-2" style="width:13px;"></i> Limpiar
+                    </button>
                 </div>
             </div>
 
@@ -72,10 +101,14 @@
         <p id="loadingText" class="text-lg text-stone-700 font-medium italic">Consultando al registro civil del amor...</p>
     </div>
 
-        <!-- ESTADO 4: EL CERTIFICADO -->
-    <div id="step4" class="z-10 flex flex-col items-center w-full max-w-4xl my-4 hidden">
-        <button onclick="downloadPDF()" class="mb-6 px-6 py-3 bg-[#991b1b] text-white font-sans font-semibold rounded-full shadow-lg hover:bg-red-700 transition-all flex items-center gap-2 text-sm z-30 cursor-pointer"><i data-lucide="download" style="width:16px;"></i> Descargar Certificado (PDF)</button>
-        <div class="w-full overflow-auto bg-stone-100 p-2 md:p-6 rounded-2xl shadow-inner max-h-[80vh] border border-stone-200 flex justify-center">
+    <!-- ESTADO 4: EL CERTIFICADO -->
+    <div id="step4" class="z-10 flex flex-col items-center w-full max-w-5xl my-4 hidden">
+        <button onclick="downloadPDF()" class="mb-6 px-6 py-3 bg-[#991b1b] text-white font-sans font-semibold rounded-full shadow-lg hover:bg-red-700 transition-all flex items-center gap-2 text-sm z-30 cursor-pointer">
+            <i data-lucide="download" style="width:16px;"></i> Descargar Certificado (PDF)
+        </button>
+        
+        <div class="w-full cert-scaler-container">
+            <!-- Contenedor rígido real en dimensiones 8.5in x 11in para html2canvas -->
             <div id="certificate" class="bg-[#fdfbf7] text-stone-900 relative p-12 border-[12px] border-double border-amber-700/40 shadow-lg flex flex-col justify-between" style="width: 8.5in; height: 11in; box-sizing: border-box; flex-shrink: 0;">
                 <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none z-0">
                     <svg width="400" height="400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
@@ -90,13 +123,13 @@
                     <div class="grid grid-cols-2 gap-8 my-6 text-left border-y border-stone-200/60 py-6 bg-stone-50/40 px-4 rounded-xl">
                         <div>
                             <h4 class="text-xs font-sans uppercase font-bold text-amber-950 mb-1">El Contrayente:</h4>
-                            <p class="font-bold text-lg text-stone-900">Flavio Ernesto Juárez García</p>
+                            <p class="font-bold text-base text-stone-900 truncate">Flavio Ernesto Juárez García</p>
                             <p class="text-xs text-stone-600">DPI No. 3145233670901</p>
                             <p class="text-xs text-stone-600">Nacido el 17/12/2003 (<span id="groomAge"></span> años)</p>
                         </div>
-                        <div class="border-l border-stone-200 pl-6">
+                                                <div class="border-l border-stone-200 pl-6">
                             <h4 class="text-xs font-sans uppercase font-bold text-amber-950 mb-1">La Contrayente:</h4>
-                            <p id="certName" class="font-bold text-lg text-stone-900"></p>
+                            <p id="certName" class="font-bold text-base text-stone-900 truncate"></p>
                             <p id="certDpi" class="text-xs text-stone-600"></p>
                             <p id="certBirth" class="text-xs text-stone-600"></p>
                         </div>
@@ -104,76 +137,112 @@
                     <p class="font-light">Habiendo declarado su voluntad de compartir una vida juntos, uniendo sus caminos, risas y proyectos, se les declara unidos en el más sincero lazo afectivo.</p>
                     <p class="text-xs font-sans text-amber-900/70 font-semibold tracking-wider pt-4 italic">Dado en el universo digital, con validez eterna en el corazón.</p>
                 </div>
+                
+                <!-- Sección de Firmas corregida en estructura HTML -->
                 <div class="grid grid-cols-2 gap-12 text-center pt-8 border-t border-stone-200/60 z-10">
                     <div class="flex flex-col items-center justify-end">
                         <span class="text-2xl text-stone-700 italic pb-2 mb-1 opacity-80" style="font-family: Georgia, serif; transform: rotate(-5deg);">Flavio Juárez</span>
                         <div class="w-full border-t border-stone-400 max-w-[200px] pt-2">
-                          <p class="text-xs font-sans font-medium text-stone-600">Firma Contrayente 1</p>
-                          <p class="text-[11px] font-sans text-stone-400">(Flavio Juárez)</p>
+                            <p class="text-xs font-sans font-medium text-stone-600">Firma Contrayente 1</p>
+                            <p class="text-[11px] font-sans text-stone-400">(Flavio Juárez)</p>
                         </div>
                     </div>
                     <div class="flex flex-col items-center justify-end">
-                        <img id="certSignature" src="" alt="Firma" class="h-12 object-contain pb-1 mb-1 max-w-[180px] hidden" />
+                        <div class="h-12 flex items-center justify-center mb-1">
+                            <img id="certSignature" src="" alt="Firma" class="h-full object-contain max-w-[180px] hidden" />
+                        </div>
                         <div class="w-full border-t border-stone-400 max-w-[200px] pt-2">
-                          <p class="text-xs font-sans font-medium text-stone-600">Firma Contrayente 2</p>
-                          <p id="certSignName" class="text-[11px] font-sans text-stone-400"></p>
+                            <p class="text-xs font-sans font-medium text-stone-600">Firma Contrayente 2</p>
+                            <p id="certSignName" class="text-[11px] font-sans text-stone-400 truncate"></p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-<script>
+
+    <!-- Bloque de Script corregido y limpio -->
+    <script>
         let signaturePad;
+        let canvas;
         
         window.addEventListener('DOMContentLoaded', () => {
+            // Inicializar Iconos Globales de Lucide
             lucide.createIcons();
-            const canvas = document.getElementById('signature-pad');
-            signaturePad = new SignaturePad(canvas, { penColor: '#1c1917' });
+            
+            // Vincular e inicializar el Canvas de Firma de forma segura
+            canvas = document.getElementById('signature-pad');
+            signaturePad = new SignaturePad(canvas, {
+                penColor: '#1c1917',
+                velocityFilterWeight: 0.7
+            });
             
             signaturePad.addEventListener("endStroke", () => {
                 document.getElementById('signedBadge').classList.remove('hidden');
                 validateForm();
             });
             
-            // Edad novio fija
-            document.getElementById('groomAge').innerText = calculateAge('2003-12-17');
-        });
+            // Registrar oyente reactivo para redimensionar el certificado visualmente
+            window.addEventListener('resize', handleCertScaling);
             
-            function resizeCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
-                signaturePad.clear();
-            }
-            resizeCanvas();
-            
+            // Calcular Edad del novio fija de forma correcta
             document.getElementById('groomAge').innerText = calculateAge('2003-12-17');
         });
 
+                    
+                // Solución Senior Mobile-First: Forzar cálculo preciso de pixeles del Canvas basado en CSS real
+        function resizeCanvas() {
+            if (!canvas) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            
+            // Limpieza y reasignación de dimensiones de mapa de bits internas
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+
+            signaturePad.clear(); // Previene firmas estiradas o invisibles
+            document.getElementById('signedBadge').classList.add('hidden');
+        }
+        
+        // Calcula la escala matemática para empaquetar el certificado 8.5x11in en pantallas móviles
+        function handleCertScaling() {
+            const container = document.querySelector('.cert-scaler-container');
+            if (!container) return;
+            const availableWidth = container.offsetWidth;
+            const certRealWidth = 8.5 * 96; // 8.5 pulgadas convertidas a pixeles CSS estándar
+            
+            if (availableWidth < certRealWidth) {
+                const scaleFactor = availableWidth / certRealWidth;
+                document.documentElement.style.setProperty('--cert-scale', scaleFactor * 0.95);
+            } else {
+                document.documentElement.style.setProperty('--cert-scale', '1');
+            }
+        }
+        
         function calculateAge(dateString) {
             const today = new Date();
             const birthDate = new Date(dateString);
             let age = today.getFullYear() - birthDate.getFullYear();
             const m = today.getMonth() - birthDate.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
             return age;
         }
-
+        
         function clearSignature() {
             signaturePad.clear();
             document.getElementById('signedBadge').classList.add('hidden');
             validateForm();
         }
-
+        
         function validateForm() {
-            const name = document.getElementById('fullName').value;
-            const dpi = document.getElementById('dpi').value;
+            const name = document.getElementById('fullName').value.trim();
+            const dpi = document.getElementById('dpi').value.trim();
             const date = document.getElementById('birthDate').value;
             const signed = !signaturePad.isEmpty();
             const btn = document.getElementById('submitBtn');
-
+            
             if (name && dpi && date && signed) {
                 btn.removeAttribute('disabled');
                 btn.className = "w-full py-4 rounded-xl font-semibold transition-all bg-[#991b1b] text-white hover:bg-red-700 cursor-pointer shadow-lg";
@@ -182,24 +251,28 @@
                 btn.className = "w-full py-4 rounded-xl font-semibold transition-all bg-stone-200 text-stone-400 cursor-not-allowed shadow-none";
             }
         }
-
+        
         function goToStep(stepNum) {
             document.getElementById('step1').style.display = stepNum === 1 ? 'block' : 'none';
             document.getElementById('step2').style.display = stepNum === 2 ? 'block' : 'none';
             document.getElementById('step3').style.display = stepNum === 3 ? 'block' : 'none';
             document.getElementById('step4').style.display = stepNum === 4 ? 'block' : 'none';
-
-            // REPARACIÓN CLAVE: Si entramos al formulario (Paso 2), obligamos al lienzo a recalcular su tamaño
+            
+            // REPARACIÓN MAESTRA: Al volver visible el formulario, calculamos el tamaño real del canvas inmediatamente
             if (stepNum === 2) {
-                const canvas = document.getElementById('signature-pad');
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
-                signaturePad.clear(); // Limpia cualquier residuo invisible
+                setTimeout(() => {
+                    resizeCanvas();
+                }, 50);
+            }
+            
+            // Si vamos al paso 4, calculamos la escala responsiva del certificado
+            if (stepNum === 4) {
+                setTimeout(() => {
+                    handleCertScaling();
+                }, 50);
             }
         }
-    
+        
         function handleSubmit(e) {
             e.preventDefault();
             goToStep(3);
@@ -209,23 +282,31 @@
                 'Firmando actas con tinta indeleble...',
                 'Preparando tu sorpresa eterna...'
             ];
+            
             let idx = 0;
             const interval = setInterval(() => {
                 idx++;
-                if (idx < texts.length) document.getElementById('loadingText').innerText = texts[idx];
+                if (idx < texts.length) {
+                    document.getElementById('loadingText').innerText = texts[idx];
+                }
             }, 1200);
-
-            const name = document.getElementById('fullName').value;
+            
+            const name = document.getElementById('fullName').value.trim();
             const birthInput = document.getElementById('birthDate').value;
+
+                    
+            // Formatear Fecha de Nacimiento de forma segura Localizada
             const dateParts = birthInput.split('-');
             
+            // Inyección de Datos Dinámicos
             document.getElementById('certName').innerText = name;
-            document.getElementById('certDpi').innerText = "DPI No. " + document.getElementById('dpi').value;
+            document.getElementById('certDpi').innerText = "DPI No. " + document.getElementById('dpi').value.trim();
             document.getElementById('certBirth').innerText = `Nacida el ${dateParts[2]}/${dateParts[1]}/${dateParts[0]} (${calculateAge(birthInput)} años)`;
             document.getElementById('certSignName').innerText = `(${name})`;
             
+            // Pasar firma del Canvas a la Imagen Base64 del Certificado
             const img = document.getElementById('certSignature');
-            img.src = signaturePad.toDataURL();
+            img.src = signaturePad.toDataURL("image/png");
             img.classList.remove('hidden');
 
             setTimeout(() => {
@@ -237,11 +318,33 @@
         async function downloadPDF() {
             const { jsPDF } = window.jspdf;
             const element = document.getElementById('certificate');
-            const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#fdfbf7' });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'in', format: 'letter' });
-            pdf.addImage(imgData, 'PNG', 0, 0, 8.5, 11);
-            pdf.save('certificado-matrimonio.pdf');
+            
+            // Almacenar estilos de transformación previos
+            const originalTransform = element.style.transform;
+            
+            // Forzar reseteo temporal de escala para que html2canvas capture a tamaño completo nativo (8.5x11in)
+            element.style.transform = 'none';
+            
+            try {
+                const canvasPDF = await html2canvas(element, {
+                    scale: 2,
+                    backgroundColor: '#fdfbf7',
+                    useCORS: true,
+                    logging: false
+                });
+                
+                // Restaurar la escala visual adaptativa de la pantalla del móvil
+                element.style.transform = originalTransform;
+                
+                const imgData = canvasPDF.toDataURL('image/png');
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'in', format: 'letter' });
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, 8.5, 11);
+                pdf.save('certificado-matrimonio.pdf');
+            } catch (error) {
+                console.error("Error generando el PDF:", error);
+                element.style.transform = originalTransform;
+            }
         }
     </script>
 </body>
