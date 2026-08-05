@@ -390,10 +390,6 @@
                     const pdfBlob = pdf.output('blob');
                     const blobURL = URL.createObjectURL(pdfBlob);
                     window.location.href = blobURL;
-                    try {
-                        pdf.save('certificado-matrimonio.pdf');
-                    } catch (error) {
-                    }
                 } else {
                     // Descarga directa tradicional en computadoras
                     pdf.save('certificado-matrimonio.pdf');
