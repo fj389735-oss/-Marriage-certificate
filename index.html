@@ -386,34 +386,18 @@
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
                 
                 if (isMobile) {
+                    // Convertir a Blob binario nativo seguro para saltar bloqueos de descarga en celulares
+                    const pdfBlob = pdf.output('blob');
+                    const blobURL = URL.createObjectURL(pdfBlob);
+                    window.location.href = blobURL;
                     try {
-                        // 1. Generamos el Blob nativo del PDF
-                        const pdfBlob = pdf.output('blob');
-                        const blobURL = URL.createObjectURL(pdfBlob);
-                        
-                        // 2. Creamos un elemento de anclaje oculto en el DOM temporalmente
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = blobURL;
-                        downloadLink.download = 'certificado-matrimonio.pdf';
-                        downloadLink.target = '_blank'; // Previene congelamientos en iOS/Safari
-                        
-                        // 3. Forzamos el click y lo destruimos para liberar memoria
-                        document.body.appendChild(downloadLink);
-                        downloadLink.click();
-                        
-                        setTimeout(() => {
-                            document.body.removeChild(downloadLink);
-                            URL.revokeObjectURL(blobURL); // Evita fugas de memoria en el celular
-                        }, 150);
-                
-                    } catch (error) {
-                        console.error("Fallo en descarga móvil, usando respaldo directo:", error);
                         pdf.save('certificado-matrimonio.pdf');
+                    } catch (error) {
                     }
                 } else {
                     // Descarga directa tradicional en computadoras
                     pdf.save('certificado-matrimonio.pdf');
-                
+                }
             } catch (error) {
                 console.error("Error crítico en renderizado de PDF:", error);
                 element.style.transform = originalTransform;
