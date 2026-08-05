@@ -344,61 +344,66 @@
         }
 
         async function downloadPDF() {
-            // SOLUCIÓN SENIOR: Mapear la inicialización nativa moderna de la librería por CDN
+            // Validar de forma robusta la inicialización de la librería de PDF
             let InstancePDF;
             if (window.jspdf && window.jspdf.jsPDF) {
                 InstancePDF = window.jspdf.jsPDF;
             } else if (window.jsPDF) {
                 InstancePDF = window.jsPDF;
             } else {
-                alert("Las dependencias aún se están sincronizando en tu dispositivo. Espera 3 segundos y presiona de nuevo.");
+                alert("Las dependencias se están sincronizando. Espera 2 segundos y presiona de nuevo.");
                 return;
             }
 
             const element = document.getElementById('certificate');
             const originalTransform = element.style.transform;
             
-            // Forzar reseteo temporal de escala para que html2canvas capture las dimensiones reales (8.5x11in)
+            // Forzar reseteo temporal de escala para que la captura mantenga la proporción real (8.5x11in)
             element.style.transform = 'none';
             
             try {
-                // Capturar la sección gráfica del certificado
+                // Configuración de html2canvas optimizada para entornos móviles restrictivos
                 const canvasPDF = await html2canvas(element, {
-                    scale: 2,
+                    scale: 2, // Alta definición para la impresión
                     backgroundColor: '#fdfbf7',
                     useCORS: true,
-                    logging: false
+                    logging: false,
+                    allowTaint: false, // Evita romper el render por problemas de origen cruzado
+                    ignoreElements: (node) => {
+                        // Ignoramos el SVG de fondo si llega a colapsar el motor móvil
+                        return node.tagName === 'svg' && node.classList.contains('pointer-events-none');
+                    }
                 });
                 
                 // Restaurar la vista adaptativa del celular de forma inmediata
                 element.style.transform = originalTransform;
                 
-                const imgData = canvasPDF.toDataURL('image/png');
+                // Conversión gráfica a datos
+                const imgData = canvasPDF.toDataURL('image/jpeg', 0.95); // Cambiado a JPEG para optimizar peso en móviles
                 
-                // Instanciar el PDF con la clase constructora correcta
+                // Instanciar el documento PDF en formato Carta (Letter)
                 const pdf = new InstancePDF({ orientation: 'portrait', unit: 'in', format: 'letter' });
-                pdf.addImage(imgData, 'PNG', 0, 0, 8.5, 11);
+                pdf.addImage(imgData, 'JPEG', 0, 0, 8.5, 11);
                 
-                // Forzar guardado nativo estándar
-                pdf.save('certificado-matrimonio.pdf');
+                // DETECCIÓN DE MÓVIL (iOS / Android)
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
                 
-                // Respaldo de visualización para navegadores móviles (iOS / Android)
-                if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                    setTimeout(() => {
-                        const blobString = pdf.output('datauristring');
-                        const newWindow = window.open();
-                        if (newWindow) {
-                            newWindow.document.write(`<iframe src="${blobString}" width="100%" height="100%" style="border:none;"></iframe>`);
-                        } else {
-                            window.location.href = blobString;
-                        }
-                    }, 400);
+                if (isMobile) {
+                    // Obtener el PDF como un archivo binario Blob real para saltarse el bloqueo de descarga
+                    const pdfBlob = pdf.output('blob');
+                    const blobURL = URL.createObjectURL(pdfBlob);
+                    
+                    // Redirección directa y segura al visualizador del sistema del smartphone
+                    window.location.href = blobURL;
+                } else {
+                    // Descarga directa tradicional transparente en Computadoras de escritorio
+                    pdf.save('certificado-matrimonio.pdf');
                 }
                 
             } catch (error) {
                 console.error("Error crítico en renderizado de PDF:", error);
                 element.style.transform = originalTransform;
-                alert("Ocurrió un inconveniente técnico al procesar la imagen del certificado. Inténtalo de nuevo.");
+                alert("Ocurrió un inconveniente técnico al procesar el certificado. Inténtalo de nuevo.");
             }
         }
     </script>
